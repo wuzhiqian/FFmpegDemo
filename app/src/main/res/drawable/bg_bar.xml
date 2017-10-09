@@ -3,5 +3,5 @@
     <!-- 第二进度图 -->
     <item android:id="@+id/SecondaryProgress" android:drawable="@drawable/scrubber_secondary_holo" />
     <!-- 进度度 -->
-    <item android:id="@+android:id/progress" android:drawable="@drawable/scrubber_primary_holo" />
+    <item android:id="@+id/progress" android:drawable="@drawable/scrubber_primary_holo" />
 </layer-list>
