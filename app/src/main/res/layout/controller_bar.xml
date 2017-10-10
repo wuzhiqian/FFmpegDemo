@@ -10,6 +10,7 @@
         android:id="@+id/playImg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
         android:src="@mipmap/mediacontroller_play" />
 
     <TextView
@@ -43,7 +44,9 @@
         android:layout_toRightOf="@id/startText"
         android:max="100"
         android:progress="0"
+        android:splitTrack="false"
         android:progressDrawable="@drawable/bg_bar"
-        android:thumb="@drawable/thumb_bar" />
+        android:thumb="@drawable/thumb_bar"
+        />
 
 </RelativeLayout>
