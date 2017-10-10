@@ -2,51 +2,48 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="50dp"
     android:background="@android:color/black"
-    android:layout_centerVertical="true">
+    android:minHeight="50dp">
 
-    
+
     <ImageView
+        android:id="@+id/playImg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/playImg"
         android:src="@mipmap/mediacontroller_play" />
 
     <TextView
+        android:id="@+id/startText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="00:00"
-        android:textColor="@android:color/white"
-        android:layout_toRightOf="@id/playImg"
         android:layout_centerVertical="true"
-        android:id="@+id/startText"
-        />
+        android:layout_toRightOf="@id/playImg"
+        android:text="00:00"
+        android:textColor="@android:color/white" />
 
     <TextView
+        android:id="@+id/endText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="20:20"
-        android:textColor="@android:color/white"
-        android:layout_centerVertical="true"
         android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
         android:layout_marginRight="10dp"
-        android:id="@+id/endText"/>
-
+        android:text="20:20"
+        android:textColor="@android:color/white" />
 
 
     <SeekBar
+        android:id="@+id/seekBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/seekBar"
-        android:layout_toLeftOf="@id/endText"
-        android:layout_toRightOf="@id/startText"
         android:layout_centerVertical="true"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
+        android:layout_toLeftOf="@id/endText"
+        android:layout_toRightOf="@id/startText"
         android:max="100"
         android:progress="0"
-        android:thumb="@drawable/thumb_bar"
-        android:progressDrawable="@drawable/bg_bar" />
-    
+        android:progressDrawable="@drawable/bg_bar"
+        android:thumb="@drawable/thumb_bar" />
+
 </RelativeLayout>

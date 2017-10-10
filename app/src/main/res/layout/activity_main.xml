@@ -7,12 +7,17 @@
     tools:context="com.wzq.ffmpegdemo.MainActivity">
 
     <SurfaceView
+        android:id="@+id/surfaceView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/surfaceView"
-        android:minHeight="200dp"/>
+        android:minHeight="200dp" />
 
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/surfaceView">
+        <include layout="@layout/controller_bar"></include>
+    </RelativeLayout>
 
-    
 
 </RelativeLayout>
