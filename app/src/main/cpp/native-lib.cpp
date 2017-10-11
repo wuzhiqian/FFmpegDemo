@@ -1,11 +1,32 @@
 #include <jni.h>
 #include <string>
-extern "C"
-JNIEXPORT jstring JNICALL
-Java_com_wzq_ffmpegdemo_ui_MainActivity_stringFromJNI(JNIEnv *env, jobject instance) {
+
+
+
+JNIEXPORT void JNICALL
+Java_com_wzq_ffmpegdemo_puller_utils_Puller_release(JNIEnv *env, jobject instance) {
 
     // TODO
-    std::string hello = "Hello from C++";
-    return env->NewStringUTF(hello.c_str());
+
 }
+
+JNIEXPORT void JNICALL
+Java_com_wzq_ffmpegdemo_puller_utils_Puller_playNative(JNIEnv *env, jobject instance,
+                                                       jstring path_) {
+    const char *path = env->GetStringUTFChars(path_, 0);
+
+    // TODO
+
+    env->ReleaseStringUTFChars(path_, path);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_wzq_ffmpegdemo_puller_utils_Puller_display(JNIEnv *env, jobject instance,
+                                                    jobject surface) {
+
+    // TODO
+
+}
+
 

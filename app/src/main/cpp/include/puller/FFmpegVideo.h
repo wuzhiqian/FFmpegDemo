@@ -1,0 +1,8 @@
+//
+// Created by wzq on 2017/10/12.
+//
+
+#ifndef FFMPEGDEMO_FFMPEGVIDEO_H
+#define FFMPEGDEMO_FFMPEGVIDEO_H
+
+#endif //FFMPEGDEMO_FFMPEGVIDEO_H
