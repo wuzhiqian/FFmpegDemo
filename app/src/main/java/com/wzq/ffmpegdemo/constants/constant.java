@@ -5,5 +5,5 @@ package com.wzq.ffmpegdemo.constants;
  */
 
 public class constant {
-    public static final String BASE_URL = "rtmp://59.110.240.67/myapp/mystream";
+    public static final String BASE_URL = "";
 }
