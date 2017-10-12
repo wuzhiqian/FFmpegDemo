@@ -3,6 +3,7 @@
 #include "include/puller/FFmpegAudio.h"
 #include <android/native_window_jni.h>
 
+
 extern "C" {
 FFmpegAudio *audio;
 
@@ -110,6 +111,10 @@ JNIEXPORT void JNICALL
 Java_com_wzq_ffmpegdemo_puller_utils_Puller_display(JNIEnv *env, jobject instance,
                                                     jobject surface) {
 
+}
+JNIEXPORT jint JNICALL
+Java_com_wzq_ffmpegdemo_puller_utils_Puller_isPlay(JNIEnv *env, jobject instance) {
+    return isPlay;
 }
 
 

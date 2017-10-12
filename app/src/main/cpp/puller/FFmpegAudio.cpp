@@ -25,6 +25,7 @@ int FFmpegAudio::get(AVPacket *packet) {
             pthread_cond_wait(&cond, &mutex);
     }
     pthread_mutex_unlock(&mutex);
+    return 0;
 }
 
 
@@ -68,10 +69,9 @@ void *playAudio(void *args) {
 }
 
 int getPcm(FFmpegAudio *audio) {
-    int frameCount = 0;
     int getFrame;
     int size;
-    AVPacket *packet = (AVPacket *) av_malloc(sizeof(AVPacket));
+    AVPacket *packet = (AVPacket *) av_mallocz(sizeof(AVPacket));
     AVFrame *frame = av_frame_alloc();
     while (audio->isPlay) {
         size = 0;
@@ -137,6 +137,7 @@ int FFmpegAudio::createPlayer() {
     (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_PLAY, &playItf);
     (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_BUFFERQUEUE, &bufferQueueItf);
     (*bufferQueueItf)->RegisterCallback(bufferQueueItf, bqPlayCallback, this);
+
     (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_VOLUME, &volumeItf);
     (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PLAYING);
     bqPlayCallback(bufferQueueItf, this);

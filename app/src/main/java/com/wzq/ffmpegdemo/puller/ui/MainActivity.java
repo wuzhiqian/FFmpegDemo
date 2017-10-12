@@ -15,7 +15,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SurfaceView surfaceView;
     private Puller puller;
     private ImageView mediaPlayImage;
-    private boolean isPlaying = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,12 +30,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void play() {
-        if (isPlaying) {
-            isPlaying = false;
+        if (puller.isPlay() == 1) {
             puller.release();
+            mediaPlayImage.setImageResource(R.mipmap.mediacontroller_play);
         } else {
-            isPlaying = true;
             puller.play(constant.BASE_URL);
+            mediaPlayImage.setImageResource(R.mipmap.mediacontroller_pause);
         }
 
     }

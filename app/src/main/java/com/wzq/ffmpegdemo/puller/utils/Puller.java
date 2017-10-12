@@ -27,6 +27,8 @@ public class Puller implements SurfaceHolder.Callback {
     public native void release();
 
 
+    public native int isPlay();
+
     public void play(String path){
         if(surfaceView == null)
             return;
