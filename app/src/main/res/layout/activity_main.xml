@@ -5,19 +5,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.wzq.ffmpegdemo.puller.ui.MainActivity">
-
-    <SurfaceView
-        android:id="@+id/surfaceView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="200dp" />
-
     <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/surfaceView">
-        <include layout="@layout/controller_bar"></include>
+        android:id="@+id/rContent"
+        android:layout_width="match_parent"
+        android:layout_height="200dp">
+        <SurfaceView
+            android:id="@+id/surfaceView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="200dp" />
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/surfaceView">
+            <include layout="@layout/controller_bar"></include>
+        </RelativeLayout>
     </RelativeLayout>
+
 
 
 </RelativeLayout>

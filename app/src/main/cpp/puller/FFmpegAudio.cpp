@@ -187,6 +187,7 @@ void FFmpegAudio::stop() {
         avcodec_free_context(&this->codecContext);
         this->codecContext = 0;
     }
+
 }
 
 

@@ -35,6 +35,8 @@ public:
 
     int createFFmpeg(FFmpegAudio *audio);
 
+
+
 public:
     int isPlay;
     int index;
@@ -48,6 +50,7 @@ public:
     int out_channel_nb;
 
     double clock;
+
 
     AVRational time_base;
 

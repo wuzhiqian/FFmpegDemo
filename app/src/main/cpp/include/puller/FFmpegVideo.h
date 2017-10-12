@@ -4,16 +4,25 @@
 
 #ifndef FFMPEGDEMO_FFMPEGVIDEO_H
 #define FFMPEGDEMO_FFMPEGVIDEO_H
+
 #include <queue>
 #include "FFmpegAudio.h"
+
 #endif //FFMPEGDEMO_FFMPEGVIDEO_H
 extern "C"
 {
-class FFmpegVedio {
-public:
-    FFmpegVedio();
 
-    ~FFmpegVedio();
+#include <libswresample/swresample.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libavutil/avutil.h>
+#include <libswscale/swscale.h>
+#include <libavutil/time.h>
+class FFmpegVideo {
+public:
+    FFmpegVideo();
+
+    ~FFmpegVideo();
 
     int get(AVPacket *packet);
 
@@ -25,10 +34,6 @@ public:
 
     void setAvCodecContext(AVCodecContext *codecContext);
 
-    /**
-     * 设置回调接口
-     * @param call
-     */
     void setPlayCall(void (*call)(AVFrame *frame));
 
     double synchronize(AVFrame *frame, double play);
