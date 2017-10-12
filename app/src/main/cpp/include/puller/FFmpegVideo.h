@@ -4,5 +4,57 @@
 
 #ifndef FFMPEGDEMO_FFMPEGVIDEO_H
 #define FFMPEGDEMO_FFMPEGVIDEO_H
-
+#include <queue>
+#include "FFmpegAudio.h"
 #endif //FFMPEGDEMO_FFMPEGVIDEO_H
+extern "C"
+{
+class FFmpegVedio {
+public:
+    FFmpegVedio();
+
+    ~FFmpegVedio();
+
+    int get(AVPacket *packet);
+
+    int put(AVPacket *packet);
+
+    void play();
+
+    void stop();
+
+    void setAvCodecContext(AVCodecContext *codecContext);
+
+    /**
+     * 设置回调接口
+     * @param call
+     */
+    void setPlayCall(void (*call)(AVFrame *frame));
+
+    double synchronize(AVFrame *frame, double play);
+
+    void setAudio(FFmpegAudio *audio);
+
+public:
+
+    int isPlay;
+
+    int index;
+
+    std::queue<AVPacket *> queue;
+
+    pthread_t p_playId;
+
+    AVCodecContext *codecContext;
+
+
+    pthread_mutex_t mutex;
+
+    pthread_cond_t cond;
+
+    FFmpegAudio *audio;
+    AVRational time_base;
+    double clock;
+
+};
+};

@@ -10,7 +10,10 @@ import android.view.SurfaceView;
 
 public class Puller implements SurfaceHolder.Callback {
     static {
-        System.loadLibrary("ffmpeg.so");
+        System.loadLibrary("faac");
+//        System.loadLibrary("rtmp");
+        System.loadLibrary("ffmpeg");
+        System.loadLibrary("x264");
         System.loadLibrary("native-lib");
     }
 
