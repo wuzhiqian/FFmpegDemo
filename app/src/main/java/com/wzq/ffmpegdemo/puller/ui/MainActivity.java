@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.OrientationEventListener;
 import android.view.SurfaceView;
 import android.view.View;
@@ -21,6 +22,7 @@ import android.widget.TextView;
 import com.wzq.ffmpegdemo.R;
 import com.wzq.ffmpegdemo.constants.constant;
 import com.wzq.ffmpegdemo.puller.utils.Puller;
+import com.wzq.ffmpegdemo.widget.ControlLayout;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -36,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     Handler handler = new Handler();
     Handler loadingHandler = new Handler();
+    private ControlLayout controlLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mediaPlayImage = (ImageView) findViewById(R.id.playImg);
         startText = (TextView) findViewById(R.id.startText);
         loading = (TextView) findViewById(R.id.loading);
+        controlLayout = (ControlLayout) findViewById(R.id.controlBar);
         mediaPlayImage.setOnClickListener(this);
 
         puller = new Puller();
@@ -57,6 +61,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setWH(getResources().getConfiguration().orientation);
 
         startRunTime();
+        controlLayout.setVisibility(View.VISIBLE);
+        surfaceView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                switch (motionEvent.getAction()){
+                    case MotionEvent.ACTION_DOWN:
+                        controlLayout.setVisibility(View.VISIBLE);
+                        break;
+                }
+                return false;
+            }
+        });
 
     }
 
@@ -81,7 +97,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (puller.isPlay() == 1) {
                     loading.setVisibility(View.GONE);
                     loadingHandler.removeCallbacksAndMessages(null);
-                    mediaPlayImage.setEnabled(true);
                     mediaPlayImage.setImageResource(R.mipmap.mediacontroller_pause);
                 } else {
                 }
@@ -108,7 +123,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void doPause() {
-        mediaPlayImage.setEnabled(true);
         mediaPlayImage.setImageResource(R.mipmap.mediacontroller_play);
         time += puller.getTime();
         puller.release();
@@ -116,7 +130,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void rePlay() {
-        mediaPlayImage.setEnabled(false);
         loading();
         puller.play(constant.BASE_URL);
     }
