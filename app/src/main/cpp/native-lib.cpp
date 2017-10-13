@@ -19,6 +19,8 @@ int isPlay = 0;
 const char *path;
 ANativeWindow *window = 0;
 
+pthread_mutex_t mutex;
+
 void call_video_play(AVFrame *frame) {
     if (!window)
         return;
@@ -38,7 +40,6 @@ void *process(void *args) {
     av_register_all();
     avformat_network_init();
     AVFormatContext *formatContext = avformat_alloc_context();
-    LOGE("%s", path);
     if (avformat_open_input(&formatContext, path, NULL, NULL) != 0) {
         LOGE("%s", "打开视频失败");
     }
@@ -113,7 +114,11 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_wzq_ffmpegdemo_puller_utils_Puller_release(JNIEnv *env, jobject instance) {
 
-
+    if(!isPlay)
+    {
+        return;
+    }
+    pthread_mutex_lock(&mutex);
     if (isPlay) {
         isPlay = 0;
         pthread_join(p_tid, NULL);
@@ -133,17 +138,27 @@ Java_com_wzq_ffmpegdemo_puller_utils_Puller_release(JNIEnv *env, jobject instanc
         audio = 0;
     }
 
+
+    pthread_mutex_unlock(&mutex);
+    pthread_mutex_destroy(&mutex);
+//    pthread_exit(0);
+
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_wzq_ffmpegdemo_puller_utils_Puller_playNative(JNIEnv *env, jobject instance,
                                                        jstring path_) {
+    if(isPlay)
+        return;
+    pthread_mutex_init(&mutex, NULL);
+    pthread_mutex_lock(&mutex);
     path = env->GetStringUTFChars(path_, 0);
     audio = new FFmpegAudio();
     video = new FFmpegVideo();
     video->setPlayCall(call_video_play);
     pthread_create(&p_tid, NULL, process, NULL);
+    pthread_mutex_unlock(&mutex);
 }
 
 
