@@ -32,9 +32,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private RelativeLayout content;
 
     private double time;
-
+    private TextView loading;
 
     Handler handler = new Handler();
+    Handler loadingHandler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         content = (RelativeLayout) findViewById(R.id.rContent);
         mediaPlayImage = (ImageView) findViewById(R.id.playImg);
         startText = (TextView) findViewById(R.id.startText);
+        loading = (TextView) findViewById(R.id.loading);
         mediaPlayImage.setOnClickListener(this);
 
         puller = new Puller();
@@ -58,18 +60,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void startRunTime(){
+    private void startRunTime() {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (puller.isPlay() == 1) {
-                    startText.setText(String.format("%02d:%02d", ((long)(time + puller.getTime())) / 60, ((long)(time + puller.getTime())) % 60));
+                    startText.setText(String.format("%02d:%02d", ((long) (time + puller.getTime())) / 60, ((long) (time + puller.getTime())) % 60));
                 }
                 handler.postDelayed(this, 500);
             }
         }, 500);
     }
 
+
+    private void loading() {
+        loading.setVisibility(View.VISIBLE);
+        loadingHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (puller.isPlay() == 1) {
+                    loading.setVisibility(View.GONE);
+                    loadingHandler.removeCallbacksAndMessages(null);
+                    mediaPlayImage.setEnabled(true);
+                    mediaPlayImage.setImageResource(R.mipmap.mediacontroller_pause);
+                } else {
+                }
+            }
+        }, 1000);
+    }
 
     private void setWH(int oritention) {
         float screenWidth = getWindowManager().getDefaultDisplay().getWidth();
@@ -84,12 +102,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (puller.isPlay() == 1) {
             doPause();
         } else {
+
             rePlay();
         }
-
     }
 
     private void doPause() {
+        mediaPlayImage.setEnabled(true);
         mediaPlayImage.setImageResource(R.mipmap.mediacontroller_play);
         time += puller.getTime();
         puller.release();
@@ -97,11 +116,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void rePlay() {
+        mediaPlayImage.setEnabled(false);
+        loading();
         puller.play(constant.BASE_URL);
-        mediaPlayImage.setImageResource(R.mipmap.mediacontroller_pause);
     }
 
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (puller.isPlay() == 1) {
+            doPause();
+        }
+    }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -112,14 +139,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         handler.removeCallbacksAndMessages(null);
+        loadingHandler.removeCallbacksAndMessages(null);
         super.onDestroy();
     }
-//
-//    @Override
-//    protected void onStop() {
-//        doPause();
-//        super.onStop();
-//    }
+
 
     @Override
     public void onClick(View view) {
