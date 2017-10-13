@@ -1,19 +1,13 @@
 package com.wzq.ffmpegdemo.puller.ui;
 
-import android.content.Context;
+
 import android.content.res.Configuration;
-import android.hardware.SensorManager;
 import android.os.Handler;
-import android.os.PowerManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
-import android.view.OrientationEventListener;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -65,9 +59,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         surfaceView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                switch (motionEvent.getAction()){
+                switch (motionEvent.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         controlLayout.setVisibility(View.VISIBLE);
+                        if(puller.isPlay() == 1)
+                            controlLayout.setVisibleBar();
+                        break;
+                    case MotionEvent.ACTION_CANCEL:
                         break;
                 }
                 return false;
@@ -91,6 +89,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void loading() {
         loading.setVisibility(View.VISIBLE);
+        loading.setText("loading...");
+        if (mediaPlayImage.isEnabled())
+            mediaPlayImage.setEnabled(false);
+        controlLayout.setVisibleBar();
         loadingHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -98,7 +100,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     loading.setVisibility(View.GONE);
                     loadingHandler.removeCallbacksAndMessages(null);
                     mediaPlayImage.setImageResource(R.mipmap.mediacontroller_pause);
+                    if (!mediaPlayImage.isEnabled())
+                        mediaPlayImage.setEnabled(true);
                 } else {
+                    if (!mediaPlayImage.isEnabled())
+                        mediaPlayImage.setEnabled(true);
+                    loadingHandler.postDelayed(this, 1000);
                 }
             }
         }, 1000);
@@ -117,7 +124,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (puller.isPlay() == 1) {
             doPause();
         } else {
-
             rePlay();
         }
     }
@@ -126,12 +132,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mediaPlayImage.setImageResource(R.mipmap.mediacontroller_play);
         time += puller.getTime();
         puller.release();
-
+        loading.setText("stop...");
+        loading.setVisibility(View.VISIBLE);
+        loadingHandler.removeCallbacksAndMessages(null);
+        if (!mediaPlayImage.isEnabled())
+            mediaPlayImage.setEnabled(true);
+        controlLayout.setVisibility(View.VISIBLE);
+//        controlLayout.setVisibleBar();
     }
 
     private void rePlay() {
         loading();
         puller.play(constant.BASE_URL);
+
     }
 
 

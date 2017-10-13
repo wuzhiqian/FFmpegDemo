@@ -2,6 +2,7 @@ package com.wzq.ffmpegdemo.widget;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.support.annotation.IntDef;
 import android.util.AttributeSet;
 import android.view.View;
@@ -13,6 +14,8 @@ import android.widget.RelativeLayout;
  */
 
 public class ControlLayout extends RelativeLayout {
+    ValueAnimator animator;
+
     public ControlLayout(Context context) {
         this(context, null);
     }
@@ -25,25 +28,30 @@ public class ControlLayout extends RelativeLayout {
         super(context, attrs, defStyleAttr);
     }
 
-    @Override
-    public void setVisibility(int visibility) {
-        super.setVisibility(visibility);
-        if (visibility == VISIBLE) {
-            clearAnimation();
-            ValueAnimator animator = new ValueAnimator();
+
+    public void setVisibleBar(){
+        if (getVisibility() == VISIBLE) {
+            animator = new ValueAnimator();
             animator.setInterpolator(new LinearInterpolator());
             animator.setFloatValues(100, 0);
             animator.setDuration(7000);
             animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                    setAlpha((float)valueAnimator.getAnimatedValue());
-                    if((float)valueAnimator.getAnimatedValue() <= 0)
+                    setAlpha((float) valueAnimator.getAnimatedValue());
+                    if ((float) valueAnimator.getAnimatedValue() <= 0)
                         setVisibility(GONE);
                 }
             });
             animator.start();
         }
+    }
+
+    @Override
+    public void setVisibility(int visibility) {
+        super.setVisibility(visibility);
+        if (animator != null && animator.isRunning())
+            animator.cancel();
     }
 
 
