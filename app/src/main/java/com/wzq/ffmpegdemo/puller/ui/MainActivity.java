@@ -1,10 +1,19 @@
 package com.wzq.ffmpegdemo.puller.ui;
 
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
@@ -12,9 +21,11 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.wzq.ffmpegdemo.R;
 import com.wzq.ffmpegdemo.constants.constant;
+import com.wzq.ffmpegdemo.puller.utils.FileUtil;
 import com.wzq.ffmpegdemo.puller.utils.Puller;
 import com.wzq.ffmpegdemo.widget.ControlLayout;
 
@@ -33,6 +44,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Handler handler = new Handler();
     Handler loadingHandler = new Handler();
     private ControlLayout controlLayout;
+    private final int SELECT_FILE_FLAG = 1;
+    private final int READ_STORAGE = 100;
+    private String path;
+    private FileUtil fileUtil;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         loading = (TextView) findViewById(R.id.loading);
         controlLayout = (ControlLayout) findViewById(R.id.controlBar);
         mediaPlayImage.setOnClickListener(this);
-
+        fileUtil = new FileUtil();
         puller = new Puller();
         puller.setSurfaceView(surfaceView);
 
@@ -62,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 switch (motionEvent.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         controlLayout.setVisibility(View.VISIBLE);
-                        if(puller.isPlay() == 1)
+                        if (puller.isPlay() == 1)
                             controlLayout.setVisibleBar();
                         break;
                     case MotionEvent.ACTION_CANCEL:
@@ -71,7 +86,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return false;
             }
         });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_STORAGE);
+            }
+        }
+    }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == READ_STORAGE){
+            if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_STORAGE);
+                }
+            }
+        }
     }
 
     private void startRunTime() {
@@ -86,6 +117,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }, 500);
     }
 
+    public void selectFile(View view) {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, SELECT_FILE_FLAG);
+    }
 
     private void loading() {
         loading.setVisibility(View.VISIBLE);
@@ -138,12 +175,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (!mediaPlayImage.isEnabled())
             mediaPlayImage.setEnabled(true);
         controlLayout.setVisibility(View.VISIBLE);
-//        controlLayout.setVisibleBar();
     }
 
     private void rePlay() {
+        if (TextUtils.isEmpty(path)) {
+            Toast.makeText(this, "请选择文件~", Toast.LENGTH_SHORT).show();
+            return;
+        }
         loading();
-        puller.play(constant.BASE_URL);
+        puller.play(path);
 
     }
 
@@ -179,4 +219,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == SELECT_FILE_FLAG)
+            if (resultCode == RESULT_OK) {
+                Uri uri = data.getData();
+                if ("file".equalsIgnoreCase(uri.getScheme())) {
+                    path = uri.getPath();
+                }else {
+                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+                        path = fileUtil.getPath(this, uri);
+                    } else {
+                        path = fileUtil.getRealPathFromURI(uri, this);
+                    }
+                }
+            }
+    }
 }

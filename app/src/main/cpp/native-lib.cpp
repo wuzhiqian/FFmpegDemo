@@ -36,15 +36,37 @@ void call_video_play(AVFrame *frame) {
     }
     ANativeWindow_unlockAndPost(window);
 }
+
+void stop(){
+    if (video) {
+        if (video->isPlay)
+            video->stop();
+        delete (video);
+        video = 0;
+    }
+
+    if (audio) {
+        if (audio->isPlay) {
+            audio->stop();
+        }
+        delete (audio);
+        audio = 0;
+    }
+}
+
 void *process(void *args) {
     av_register_all();
     avformat_network_init();
     AVFormatContext *formatContext = avformat_alloc_context();
     if (avformat_open_input(&formatContext, path, NULL, NULL) != 0) {
         LOGE("%s", "打开视频失败");
+        stop();
+        return NULL;
     }
     if (avformat_find_stream_info(formatContext, NULL) < 0) {
         LOGE("%s", "获取视频失败");
+        stop();
+        return NULL;
     }
 
     int i = 0;
@@ -154,6 +176,7 @@ Java_com_wzq_ffmpegdemo_puller_utils_Puller_playNative(JNIEnv *env, jobject inst
     pthread_mutex_init(&mutex, NULL);
     pthread_mutex_lock(&mutex);
     path = env->GetStringUTFChars(path_, 0);
+    LOGE("%s", path);
     audio = new FFmpegAudio();
     video = new FFmpegVideo();
     video->setPlayCall(call_video_play);

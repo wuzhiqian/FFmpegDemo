@@ -5,10 +5,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.wzq.ffmpegdemo.puller.ui.MainActivity">
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/openBtn"
+        android:clickable="true"
+        android:onClick="selectFile"
+        android:text="文件列表"/>
     <RelativeLayout
         android:id="@+id/rContent"
         android:layout_width="match_parent"
         android:layout_height="200dp">
+
         <SurfaceView
             android:id="@+id/surfaceView"
             android:layout_width="match_parent"
