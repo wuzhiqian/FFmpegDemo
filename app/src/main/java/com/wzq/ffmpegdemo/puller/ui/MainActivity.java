@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final int READ_STORAGE = 100;
     private String path;
     private FileUtil fileUtil;
+    private boolean isPlay = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -189,12 +190,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        if (puller.isPlay() == 1) {
-            doPause();
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if(hasFocus){
+            if(isPlay){
+                if(puller.isPlay() != 1)
+                    rePlay();
+            }
+        }
+        else {
+            if (puller.isPlay() == 1) {
+                doPause();
+                isPlay = true;
+            }else
+                isPlay = false;
         }
     }
+
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
