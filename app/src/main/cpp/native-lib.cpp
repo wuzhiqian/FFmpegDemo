@@ -163,7 +163,7 @@ Java_com_wzq_ffmpegdemo_puller_utils_Puller_release(JNIEnv *env, jobject instanc
 
     pthread_mutex_unlock(&mutex);
     pthread_mutex_destroy(&mutex);
-//    pthread_exit(0);
+    pthread_exit(0);
 
 }
 
