@@ -12,6 +12,9 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libavutil/time.h>
 
+
+
+
 FFmpegAudio *audio;
 FFmpegVideo *video;
 pthread_t p_tid;
@@ -104,8 +107,15 @@ void *process(void *args) {
     AVPacket *packet = (AVPacket *) av_mallocz(sizeof(AVPacket));
     int ret;
     while (isPlay) {
+        if(audio->queue.size() >= audio->MAX_AUDIO_QUEUE_SIZE || video->queue.size()>= video->MAX_VIDEO_QUEUE_SIZE)
+        {
+            av_usleep(100);
+            continue;
+        }
+
         ret = av_read_frame(formatContext, packet);
         if (ret == 0) {
+
             if (audio && audio->isPlay && packet->stream_index == audio->index) {
                 audio->put(packet);
             } else if (video && video->isPlay && packet->stream_index == video->index)
@@ -140,7 +150,7 @@ Java_com_wzq_ffmpegdemo_puller_utils_Puller_release(JNIEnv *env, jobject instanc
     {
         return;
     }
-    pthread_mutex_lock(&mutex);
+//    pthread_mutex_lock(&mutex);
     if (isPlay) {
         isPlay = 0;
         pthread_join(p_tid, NULL);
@@ -161,9 +171,9 @@ Java_com_wzq_ffmpegdemo_puller_utils_Puller_release(JNIEnv *env, jobject instanc
     }
 
 
-    pthread_mutex_unlock(&mutex);
-    pthread_mutex_destroy(&mutex);
-    pthread_exit(0);
+//    pthread_mutex_unlock(&mutex);
+//    pthread_mutex_destroy(&mutex);
+   // pthread_exit(0);
 
 }
 
@@ -173,15 +183,15 @@ Java_com_wzq_ffmpegdemo_puller_utils_Puller_playNative(JNIEnv *env, jobject inst
                                                        jstring path_) {
     if(isPlay)
         return;
-    pthread_mutex_init(&mutex, NULL);
-    pthread_mutex_lock(&mutex);
+//    pthread_mutex_init(&mutex, NULL);
+//    pthread_mutex_lock(&mutex);
     path = env->GetStringUTFChars(path_, 0);
     LOGE("%s", path);
     audio = new FFmpegAudio();
     video = new FFmpegVideo();
     video->setPlayCall(call_video_play);
     pthread_create(&p_tid, NULL, process, NULL);
-    pthread_mutex_unlock(&mutex);
+//    pthread_mutex_unlock(&mutex);
 }
 
 

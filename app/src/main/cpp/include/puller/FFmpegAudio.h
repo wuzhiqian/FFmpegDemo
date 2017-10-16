@@ -35,7 +35,7 @@ public:
 
     int createFFmpeg(FFmpegAudio *audio);
 
-
+    int MAX_AUDIO_QUEUE_SIZE = 128;
 
 public:
     int isPlay;

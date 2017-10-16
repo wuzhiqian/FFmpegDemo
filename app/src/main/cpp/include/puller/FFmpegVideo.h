@@ -28,6 +28,8 @@ public:
 
     int put(AVPacket *packet);
 
+    int MAX_VIDEO_QUEUE_SIZE = 64;
+
     void play();
 
     void stop();
