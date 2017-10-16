@@ -47,8 +47,26 @@ void FFmpegAudio::setAvCodecContext(AVCodecContext *context) {
     createFFmpeg(this);
 }
 
-void FFmpegAudio::setPause(int data){
-     pause= data;
+void FFmpegAudio::setPause(int data) {
+    pause = data;
+    if (!pause) {
+        pthread_mutex_lock(&mutex);
+        pthread_cond_signal(&cond);
+        pthread_mutex_unlock(&mutex);
+    }
+}
+
+
+void FFmpegAudio::flush() {
+    pthread_mutex_lock(&mutex);
+    while (1){
+        if(queue.size() <=0)
+            break;
+        AVPacket *pkt = queue.front();
+        queue.pop();
+        av_free(pkt);
+    }
+    pthread_mutex_unlock(&mutex);
 }
 
 
@@ -79,13 +97,16 @@ int getPcm(FFmpegAudio *audio) {
     AVPacket *packet = (AVPacket *) av_mallocz(sizeof(AVPacket));
     AVFrame *frame = av_frame_alloc();
     while (audio->isPlay) {
-        if(audio->pause)
-            continue;
+        if (audio->pause) {
+            pthread_mutex_lock(&audio->mutex);
+            pthread_cond_wait(&audio->cond,&audio->mutex);
+            pthread_mutex_unlock(&audio->mutex);
+        }
         size = 0;
         audio->get(packet);
         if (packet->pts != AV_NOPTS_VALUE) {
             audio->clock = av_q2d(audio->time_base) * packet->pts;
-            if(!audio->pause)
+            if (!audio->pause)
                 audio->playTime = audio->clock;
         }
         avcodec_decode_audio4(audio->codecContext, frame, &getFrame, packet);
@@ -108,7 +129,7 @@ void bqPlayCallback(SLAndroidSimpleBufferQueueItf pItf_, void *args) {
     if (dataLength > 0) {
         double time = dataLength / (44100 * 2 * 2.0);
         audio->clock = audio->clock + time;
-        if(!audio->pause)
+        if (!audio->pause)
             audio->playTime = audio->clock;
         (*pItf_)->Enqueue(pItf_, audio->out_buffer, dataLength);
     }

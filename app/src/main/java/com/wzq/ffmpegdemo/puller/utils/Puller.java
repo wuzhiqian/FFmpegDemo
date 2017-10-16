@@ -25,14 +25,20 @@ public class Puller implements SurfaceHolder.Callback {
 
 
     public native void release();
+
     public native void pause();
+
+
+    public native void seeking(double pos);
 
     public native int isPlay();
 
     public native double getTime();
 
-    public void play(String path){
-        if(surfaceView == null)
+    public native double getTotleTime();
+
+    public void play(String path) {
+        if (surfaceView == null)
             return;
         playNative(path);
     }

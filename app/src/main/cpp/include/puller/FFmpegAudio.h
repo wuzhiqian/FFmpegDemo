@@ -27,6 +27,9 @@ public:
 
     int put(AVPacket *packet);
 
+    void flush();
+
+
     void play();
 
     void stop();
@@ -55,6 +58,7 @@ public:
 
     double clock;
 
+    int totleTime;
 
     AVRational time_base;
 

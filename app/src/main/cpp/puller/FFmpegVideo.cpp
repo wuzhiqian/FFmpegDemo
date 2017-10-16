@@ -28,9 +28,7 @@ int FFmpegVideo::get(AVPacket *packet) {
 }
 
 
-void FFmpegVideo::setPause(int data){
-    pause= data;
-}
+
 
 int FFmpegVideo::put(AVPacket *packet) {
     AVPacket *pkt = (AVPacket *) av_mallocz(sizeof(AVPacket));
@@ -44,6 +42,26 @@ int FFmpegVideo::put(AVPacket *packet) {
 
 }
 
+void FFmpegVideo::flush() {
+    pthread_mutex_lock(&mutex);
+    while (1){
+        if(queue.size() <=0)
+            break;
+        AVPacket *pkt = queue.front();
+        queue.pop();
+        av_free(pkt);
+    }
+    pthread_mutex_unlock(&mutex);
+}
+
+void FFmpegVideo::setPause(int data) {
+    pause = data;
+    if(!pause){
+        pthread_mutex_lock(&mutex);
+        pthread_cond_signal(&cond);
+        pthread_mutex_unlock(&mutex);
+    }
+}
 static void (*video_call)(AVFrame *frame);
 
 
@@ -70,8 +88,11 @@ void *playVideo(void *args) {
     double lastPlay, play, lastDelay, delay, audioClock, diff, syncThreshold, startTime, pts, actualDelay;
     startTime = av_gettime() / 1000000.0;
     while (video->isPlay) {
-        if(video->pause)
-            continue;
+        if (video->pause) {
+            pthread_mutex_lock(&video->mutex);
+            pthread_cond_wait(&video->cond, &video->mutex);
+            pthread_mutex_unlock(&video->mutex);
+        }
         video->get(packet);
         length = avcodec_decode_video2(video->codecContext, frame, &getFrame, packet);
         if (!getFrame)
@@ -124,7 +145,6 @@ void FFmpegVideo::play() {
 }
 
 
-
 void FFmpegVideo::stop() {
     pthread_mutex_lock(&mutex);
     isPlay = 0;
@@ -144,12 +164,12 @@ void FFmpegVideo::setAvCodecContext(AVCodecContext *codec) {
     codecContext = codec;
 }
 
-void FFmpegVideo::setPlayCall(void (* call)(AVFrame *) ) {
+void FFmpegVideo::setPlayCall(void (*call)(AVFrame *)) {
     video_call = call;
 }
 
 double FFmpegVideo::synchronize(AVFrame *frame, double play) {
-    if(play != 0)
+    if (play != 0)
         clock = play;
     else
         play = clock;

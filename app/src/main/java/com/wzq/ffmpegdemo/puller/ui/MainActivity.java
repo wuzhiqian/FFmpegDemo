@@ -14,12 +14,14 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Puller puller;
     private ImageView mediaPlayImage;
     private TextView startText;
+    private TextView endText;
 
     private RelativeLayout content;
 
@@ -48,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String path;
     private FileUtil fileUtil;
     private boolean isPlay = false;
+    private SeekBar seekBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,8 +64,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         content = (RelativeLayout) findViewById(R.id.rContent);
         mediaPlayImage = (ImageView) findViewById(R.id.playImg);
         startText = (TextView) findViewById(R.id.startText);
+        endText = (TextView) findViewById(R.id.endText);
         loading = (TextView) findViewById(R.id.loading);
         controlLayout = (ControlLayout) findViewById(R.id.controlBar);
+        seekBar = (SeekBar) findViewById(R.id.seekBar);
         mediaPlayImage.setOnClickListener(this);
         fileUtil = new FileUtil();
         puller = new Puller();
@@ -86,6 +92,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return false;
             }
         });
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                Log.e("onProgressChanged", "" + i);
+                if (b)
+                    puller.seeking(puller.getTotleTime() / (seekBar.getMax() * 1.0) * i);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_STORAGE);
@@ -96,8 +121,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == READ_STORAGE){
-            if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
+        if (requestCode == READ_STORAGE) {
+            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_STORAGE);
                 }
@@ -106,11 +131,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void startRunTime() {
+
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (puller.isPlay() == 1) {
                     startText.setText(String.format("%02d:%02d", ((long) (puller.getTime())) / 60, ((long) (puller.getTime())) % 60));
+                    endText.setText(String.format("%02d:%02d", ((long) (puller.getTotleTime() - puller.getTime())) / 60, ((long) (puller.getTotleTime() - puller.getTime())) % 60));
+                    seekBar.setProgress((int)(puller.getTime() * seekBar.getMax() / puller.getTotleTime()));
                 }
                 handler.postDelayed(this, 500);
             }
@@ -142,10 +170,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } else {
                     if (!mediaPlayImage.isEnabled())
                         mediaPlayImage.setEnabled(true);
-                    loadingHandler.postDelayed(this, 1000);
+                    loadingHandler.postDelayed(this, 500);
                 }
             }
-        }, 1000);
+        }, 500);
     }
 
     private void setWH(int oritention) {
@@ -190,17 +218,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-        if(hasFocus){
-            if(isPlay){
-                if(puller.isPlay() != 1)
+        if (hasFocus) {
+            if (isPlay) {
+                if (puller.isPlay() != 1)
                     rePlay();
             }
-        }
-        else {
+        } else {
             if (puller.isPlay() == 1) {
                 doPause();
                 isPlay = true;
-            }else
+            } else
                 isPlay = false;
         }
     }
@@ -238,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Uri uri = data.getData();
                 if ("file".equalsIgnoreCase(uri.getScheme())) {
                     path = uri.getPath();
-                }else {
+                } else {
                     if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
                         path = fileUtil.getPath(this, uri);
                     } else {

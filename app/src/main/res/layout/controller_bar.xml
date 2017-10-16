@@ -43,7 +43,7 @@
         android:layout_marginRight="5dp"
         android:layout_toLeftOf="@id/endText"
         android:layout_toRightOf="@id/startText"
-        android:max="100"
+        android:max="10000"
         android:progress="0"
         android:splitTrack="false"
         android:progressDrawable="@drawable/bg_bar"

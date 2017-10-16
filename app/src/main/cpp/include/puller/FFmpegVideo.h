@@ -34,6 +34,9 @@ public:
 
     void stop();
 
+
+    void flush();
+
     void setAvCodecContext(AVCodecContext *codecContext);
 
     void setPlayCall(void (*call)(AVFrame *frame));
@@ -66,6 +69,9 @@ public:
     FFmpegAudio *audio;
     AVRational time_base;
     double clock;
+
+
+    int totleTime;
 
 };
 };

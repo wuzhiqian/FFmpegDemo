@@ -13,8 +13,6 @@ extern "C" {
 #include <libavutil/time.h>
 
 
-
-
 FFmpegAudio *audio;
 FFmpegVideo *video;
 pthread_t p_tid;
@@ -26,6 +24,7 @@ const char *path;
 ANativeWindow *window = 0;
 
 pthread_mutex_t mutex;
+
 
 void call_video_play(AVFrame *frame) {
     if (!window)
@@ -43,7 +42,7 @@ void call_video_play(AVFrame *frame) {
     ANativeWindow_unlockAndPost(window);
 }
 
-void stop(){
+void stop() {
     if (video) {
         if (video->isPlay)
             video->stop();
@@ -61,10 +60,12 @@ void stop(){
 }
 
 
-void setPause(int data){
+void setPause(int data) {
     pause = data;
-    audio->setPause(data);
-    video->setPause(data);
+    if (audio)
+        audio->setPause(data);
+    if (video)
+        video->setPause(data);
 }
 
 void *process(void *args) {
@@ -82,6 +83,8 @@ void *process(void *args) {
         return NULL;
     }
 
+    audio->totleTime = formatContext->duration / (AV_TIME_BASE * 1.0);
+    video->totleTime = formatContext->duration / (AV_TIME_BASE * 1.0);
     int i = 0;
 
     for (; i < formatContext->nb_streams; i++) {
@@ -119,16 +122,16 @@ void *process(void *args) {
     AVPacket *packet = (AVPacket *) av_mallocz(sizeof(AVPacket));
     int ret;
     while (isPlay) {
-        if(audio->queue.size() >= audio->MAX_AUDIO_QUEUE_SIZE || video->queue.size()>= video->MAX_VIDEO_QUEUE_SIZE)
-        {
+        if (audio->queue.size() >= audio->MAX_AUDIO_QUEUE_SIZE ||
+            video->queue.size() >= video->MAX_VIDEO_QUEUE_SIZE) {
             av_usleep(100);
             continue;
         }
 
 
-        while (pause){
-           // av_paus
-        //    av_usleep(10);
+        while (pause) {
+            // av_paus
+            //    av_usleep(10);
             continue;
         }
 
@@ -172,8 +175,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_wzq_ffmpegdemo_puller_utils_Puller_release(JNIEnv *env, jobject instance) {
 
-    if(!isPlay)
-    {
+    if (!isPlay) {
         return;
     }
 //    pthread_mutex_lock(&mutex);
@@ -198,7 +200,7 @@ Java_com_wzq_ffmpegdemo_puller_utils_Puller_release(JNIEnv *env, jobject instanc
     setPause(1);
 //    pthread_mutex_unlock(&mutex);
 //    pthread_mutex_destroy(&mutex);
-   // pthread_exit(0);
+    // pthread_exit(0);
 
 }
 
@@ -206,14 +208,13 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_wzq_ffmpegdemo_puller_utils_Puller_playNative(JNIEnv *env, jobject instance,
                                                        jstring path_) {
-    if(isPlay && (1 - pause))
+    if (isPlay && (1 - pause))
         return;
 //    pthread_mutex_init(&mutex, NULL);
 //    pthread_mutex_lock(&mutex);
-    if(audio && video && path){
+    if (audio && video && path) {
         setPause(0);
-    }
-    else {
+    } else {
         path = env->GetStringUTFChars(path_, 0);
         LOGE("%s", path);
         audio = new FFmpegAudio();
@@ -234,15 +235,34 @@ Java_com_wzq_ffmpegdemo_puller_utils_Puller_display(JNIEnv *env, jobject instanc
         window = 0;
     }
     window = ANativeWindow_fromSurface(env, surface);
-    if (video && video->codecContext)
+    if ( window && video && video->codecContext)
         ANativeWindow_setBuffersGeometry(window, video->codecContext->width,
                                          video->codecContext->height, WINDOW_FORMAT_RGBA_8888);
-
 }
+
+JNIEXPORT void JNICALL
+Java_com_wzq_ffmpegdemo_puller_utils_Puller_seeking(JNIEnv *env, jobject instance, jdouble pos) {
+    pthread_mutex_lock(&mutex);
+    if(audio)
+        audio->flush();
+    if(video)
+        video->flush();
+    pthread_mutex_unlock(&mutex);
+}
+
+
+JNIEXPORT jdouble JNICALL
+Java_com_wzq_ffmpegdemo_puller_utils_Puller_getTotleTime(JNIEnv *env, jobject instance) {
+    if (audio)
+        return audio->totleTime;
+    return 0;
+}
+
+
 JNIEXPORT jint JNICALL
 Java_com_wzq_ffmpegdemo_puller_utils_Puller_isPlay(JNIEnv *env, jobject instance) {
-    if(isPlay)
-        return  1 - pause;
+    if (isPlay)
+        return 1 - pause;
     return isPlay;
 }
 
