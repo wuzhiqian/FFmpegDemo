@@ -37,7 +37,11 @@ public:
 
     int MAX_AUDIO_QUEUE_SIZE = 128;
 
+    void setPause(int pause);
+
 public:
+    int pause;
+    double playTime;
     int isPlay;
     int index;
     std::queue<AVPacket *> queue;

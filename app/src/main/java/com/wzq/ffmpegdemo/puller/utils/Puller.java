@@ -25,7 +25,7 @@ public class Puller implements SurfaceHolder.Callback {
 
 
     public native void release();
-
+    public native void pause();
 
     public native int isPlay();
 

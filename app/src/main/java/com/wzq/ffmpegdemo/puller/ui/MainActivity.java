@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private RelativeLayout content;
 
-    private double time;
     private TextView loading;
 
     Handler handler = new Handler();
@@ -111,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void run() {
                 if (puller.isPlay() == 1) {
-                    startText.setText(String.format("%02d:%02d", ((long) (time + puller.getTime())) / 60, ((long) (time + puller.getTime())) % 60));
+                    startText.setText(String.format("%02d:%02d", ((long) (puller.getTime())) / 60, ((long) (puller.getTime())) % 60));
                 }
                 handler.postDelayed(this, 500);
             }
@@ -168,8 +167,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void doPause() {
         mediaPlayImage.setImageResource(R.mipmap.mediacontroller_play);
-        time += puller.getTime();
-        puller.release();
+        puller.pause();
         loading.setText("stop...");
         loading.setVisibility(View.VISIBLE);
         loadingHandler.removeCallbacksAndMessages(null);
@@ -218,6 +216,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onDestroy() {
         handler.removeCallbacksAndMessages(null);
         loadingHandler.removeCallbacksAndMessages(null);
+        puller.release();
         super.onDestroy();
     }
 

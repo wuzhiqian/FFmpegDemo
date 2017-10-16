@@ -28,6 +28,10 @@ int FFmpegVideo::get(AVPacket *packet) {
 }
 
 
+void FFmpegVideo::setPause(int data){
+    pause= data;
+}
+
 int FFmpegVideo::put(AVPacket *packet) {
     AVPacket *pkt = (AVPacket *) av_mallocz(sizeof(AVPacket));
     if (av_copy_packet(pkt, packet))
@@ -66,6 +70,8 @@ void *playVideo(void *args) {
     double lastPlay, play, lastDelay, delay, audioClock, diff, syncThreshold, startTime, pts, actualDelay;
     startTime = av_gettime() / 1000000.0;
     while (video->isPlay) {
+        if(video->pause)
+            continue;
         video->get(packet);
         length = avcodec_decode_video2(video->codecContext, frame, &getFrame, packet);
         if (!getFrame)

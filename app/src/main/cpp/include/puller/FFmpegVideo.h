@@ -42,11 +42,15 @@ public:
 
     void setAudio(FFmpegAudio *audio);
 
+    void setPause(int pause);
+
 public:
 
     int isPlay;
 
     int index;
+
+    int pause;
 
     std::queue<AVPacket *> queue;
 

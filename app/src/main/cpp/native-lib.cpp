@@ -19,6 +19,9 @@ FFmpegAudio *audio;
 FFmpegVideo *video;
 pthread_t p_tid;
 int isPlay = 0;
+
+int pause = 1;
+
 const char *path;
 ANativeWindow *window = 0;
 
@@ -55,6 +58,13 @@ void stop(){
         delete (audio);
         audio = 0;
     }
+}
+
+
+void setPause(int data){
+    pause = data;
+    audio->setPause(data);
+    video->setPause(data);
 }
 
 void *process(void *args) {
@@ -104,12 +114,21 @@ void *process(void *args) {
     video->play();
     audio->play();
     isPlay = 1;
+    setPause(0);
+
     AVPacket *packet = (AVPacket *) av_mallocz(sizeof(AVPacket));
     int ret;
     while (isPlay) {
         if(audio->queue.size() >= audio->MAX_AUDIO_QUEUE_SIZE || video->queue.size()>= video->MAX_VIDEO_QUEUE_SIZE)
         {
             av_usleep(100);
+            continue;
+        }
+
+
+        while (pause){
+           // av_paus
+        //    av_usleep(10);
             continue;
         }
 
@@ -130,6 +149,7 @@ void *process(void *args) {
         }
     }
     isPlay = 0;
+    setPause(1);
     if (video && video->isPlay)
         video->stop();
     if (audio && audio->isPlay)
@@ -141,6 +161,12 @@ void *process(void *args) {
 
 }
 
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_wzq_ffmpegdemo_puller_utils_Puller_pause(JNIEnv *env, jobject instance) {
+    setPause(1);
+}
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -169,8 +195,7 @@ Java_com_wzq_ffmpegdemo_puller_utils_Puller_release(JNIEnv *env, jobject instanc
         delete (audio);
         audio = 0;
     }
-
-
+    setPause(1);
 //    pthread_mutex_unlock(&mutex);
 //    pthread_mutex_destroy(&mutex);
    // pthread_exit(0);
@@ -181,16 +206,21 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_wzq_ffmpegdemo_puller_utils_Puller_playNative(JNIEnv *env, jobject instance,
                                                        jstring path_) {
-    if(isPlay)
+    if(isPlay && (1 - pause))
         return;
 //    pthread_mutex_init(&mutex, NULL);
 //    pthread_mutex_lock(&mutex);
-    path = env->GetStringUTFChars(path_, 0);
-    LOGE("%s", path);
-    audio = new FFmpegAudio();
-    video = new FFmpegVideo();
-    video->setPlayCall(call_video_play);
-    pthread_create(&p_tid, NULL, process, NULL);
+    if(audio && video && path){
+        setPause(0);
+    }
+    else {
+        path = env->GetStringUTFChars(path_, 0);
+        LOGE("%s", path);
+        audio = new FFmpegAudio();
+        video = new FFmpegVideo();
+        video->setPlayCall(call_video_play);
+        pthread_create(&p_tid, NULL, process, NULL);
+    }
 //    pthread_mutex_unlock(&mutex);
 }
 
@@ -211,12 +241,14 @@ Java_com_wzq_ffmpegdemo_puller_utils_Puller_display(JNIEnv *env, jobject instanc
 }
 JNIEXPORT jint JNICALL
 Java_com_wzq_ffmpegdemo_puller_utils_Puller_isPlay(JNIEnv *env, jobject instance) {
+    if(isPlay)
+        return  1 - pause;
     return isPlay;
 }
 
 JNIEXPORT jdouble JNICALL
 Java_com_wzq_ffmpegdemo_puller_utils_Puller_getTime(JNIEnv *env, jobject instance) {
-    return audio->clock;
+    return audio->playTime;
 }
 
 }
